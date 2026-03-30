@@ -1063,14 +1063,16 @@ function start_webserver(options, shared) {
 fu.get('/state', function (req, res) {
   const host = req.headers.host;
 
+  // Detect protocol correctly (Render uses proxy)
+  const protocol = req.headers['x-forwarded-proto'] === 'https' ? 'wss' : 'ws';
+
   const state = shared.get_state();
 
-  // ✅ dynamic correct URL
-  state.game_server_url = `ws://${host}/`;
+  // ✅ FIXED
+  state.game_server_url = `${protocol}://${host}/`;
 
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.write(JSON.stringify(state), 'utf8');
-  res.end();
+  res.end(JSON.stringify(state));
 });
 
 // return server properly
