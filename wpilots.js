@@ -560,10 +560,14 @@ function start_gameserver(maps, options, shared) {
    *  @param {String} msg The message to broadcast.
    *  @return {undefined} Nothing
    */
-  server = new WebSocketServer({
-    port: parseInt(options.ws_port),
-    host: options.host
-  });
+const PORT = process.env.PORT || options.ws_port || 8000;
+
+server = new WebSocketServer({
+  port: PORT,
+  host: '0.0.0.0'
+});
+
+console.log('Game server running on port ' + PORT);
   
   server.on("connection", function(conn) {
     var connection_id     = 0,
@@ -1042,10 +1046,14 @@ var process_game_message = match (
  *  @return {http.Server} Returns the HTTP server instance.
  */
 function start_webserver(options, shared) {
-  console.log('Starting HTTP server at http://' + options.host + ':' + options.http_port);
-  var server = fu.listen(parseInt(options.http_port), options.host);
 
-  for (var i=0; i < CLIENT_DATA.length; i++) {
+  const PORT = process.env.PORT || options.http_port || 8000;
+
+  console.log('Starting HTTP server at http://0.0.0.0:' + PORT);
+
+  var server = fu.listen(PORT, '0.0.0.0');  // ✅ FIXED
+
+  for (var i = 0; i < CLIENT_DATA.length; i++) {
     var virtualpath = CLIENT_DATA[i + 1] + path.basename(CLIENT_DATA[i]);
     fu.get('/' + virtualpath, fu.staticHandler(CLIENT_DATA[i]));
     i++;
@@ -1061,7 +1069,6 @@ function start_webserver(options, shared) {
 
   return server;
 }
-
 /**
  *  Filters all rules from a options dict
  *  @param {Object} options A option set
