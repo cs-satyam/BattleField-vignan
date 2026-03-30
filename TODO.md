@@ -1,12 +1,15 @@
-# Fix WPilot Server Port Conflict for Deployment (EADDRINUSE on PORT=10000)
+# WPilots Server Fix Plan
+Track progress on fixing the broken server code in wpilots.js.
 
 ## Steps:
-- [x] 1. Update wpilots.js: Differentiate HTTP (use $PORT) and WS ports (ws_port=6114).
-- [x] 2. Test locally: `node wpilots.js` - HTTP on 8000, WS on 6114. ✅ Server running without EADDRINUSE.
-- [ ] 3. Kill test processes if needed: `npx kill-port 8000 6114 10000`.
-- [ ] 4. Set env for test: `set PORT=10000 && node wpilots.js` - HTTP 10000, WS 6114.
-- [ ] 5. Verify client connects to ws://localhost:6114/.
-- [ ] 6. Deploy to Render; set WS_PORT env if needed (default 6114 often open).
-- [ ] 7. Mark complete.
+- [x] 1. Create this TODO.md
+- [ ] 2. Fix malformed requires in wpilots.js (add newlines, fix indentation, remove stray \\n)
+- [ ] 3. Modernize WebSocketServer creation (uncomment, add 'new', use options.port/host)
+- [ ] 4. Define PORT/options before use in start_gameserver
+- [ ] 5. Fix minor issues in lib/fu.js (var process shadowing)
+- [ ] 6. Add missing utilities (get_time, round_number)
+- [ ] 7. Test: npm install & node wpilots.js
+- [ ] 8. Verify HTTP/WS servers start, serve client/index.html
 
-Progress: Starting edits...
+Next step: Fix requires via edit_file on wpilots.js.
+

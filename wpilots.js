@@ -7,14 +7,14 @@
 //
 //  Copyright (c) 2010 Johan Dahlberg
 //
-var path      = require('path'),
-    fs        = require('fs'),
-    fu        = require('./lib/fu');
-    ws        = require('ws'),
-    optparse  = require('./lib/optparse'),
-    match     = require('./lib/match').Match,
-    go        = require('./lib/gameobjects');
-    
+var path = require('path'),
+    fs = require('fs'),
+    fu = require('./lib/fu'),
+    http = require('http'),
+    ws = require('ws'),
+    optparse = require('./lib/optparse'),
+    match = require('./lib/match').Match,
+    go = require('./lib/gameobjects');
 
 var WebSocketServer = ws.Server;
 var inspect = require('util');
@@ -560,7 +560,7 @@ function start_gameserver(maps, options, shared) {
    *  @param {String} msg The message to broadcast.
    *  @return {undefined} Nothing
    */
-const PORT = options.ws_port || 6114;
+// const PORT = options.ws_port || 6114;\n// server = new WebSocketServer({\n//   port: PORT,\n//   host: '0.0.0.0'\n// });
 
 server = new WebSocketServer({
   port: PORT,
@@ -1051,7 +1051,7 @@ function start_webserver(options, shared) {
 
   console.log('Starting HTTP server at http://0.0.0.0:' + PORT);
 
-  var server = fu.listen(PORT, '0.0.0.0');  // ✅ FIXED
+  var server = fu.listen(PORT, '0.0.0.0');
 
   for (var i = 0; i < CLIENT_DATA.length; i++) {
     var virtualpath = CLIENT_DATA[i + 1] + path.basename(CLIENT_DATA[i]);
@@ -1059,14 +1059,24 @@ function start_webserver(options, shared) {
     i++;
   }
 
+  // Serve main page
   fu.get('/', fu.staticHandler(CLIENT_DATA[0]));
 
+  // FIXED /state endpoint
   fu.get('/state', function (req, res) {
-    res.writeHead(200, {'Content-Type': 'application/json'});
-    res.write(JSON.stringify(shared.get_state()), 'utf8');
+    const host = req.headers.host;
+
+    const state = shared.get_state();
+
+    // Dynamic websocket URL (important for Render)
+    state.game_server_url = `ws://${host}/`;
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.write(JSON.stringify(state), 'utf8');
     res.end();
   });
 
+  // 🔥 YOU FORGOT THIS
   return server;
 }
 /**
