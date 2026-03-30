@@ -16,7 +16,7 @@ var path = require('path'),
     match = require('./lib/match').Match,
     go = require('./lib/gameobjects');
 
-const WebSocketServer = new ws.WebSocketServer;
+const WebSocketServer = ws.WebSocketServer;
 var inspect = require('util');
 
 // Define aliases
@@ -562,7 +562,9 @@ function start_gameserver(maps, options, shared) {
    */
 // const PORT = options.ws_port || 6114;\n// server = new WebSocketServer({\n//   port: PORT,\n//   host: '0.0.0.0'\n// });
 
-const PORT = options.ws_port || 6114;\nserver = new WebSocketServer({\n  port: PORT,
+const PORT = options.ws_port || 6114;
+server = new WebSocketServer({
+    port: PORT,
   host: '0.0.0.0'
 });
 
@@ -1148,7 +1150,11 @@ function get_unique_name(players, player_id, name) {
 /**
  *  Returns a packet vector
  */
-function round_number(num, scale) {\n  var scale = Math.pow(10, scale);\n  return Math.round(num * scale) / scale;\n}\nfunction pack_vector(v) {\n  return [round_number(v[0], 2), round_number(v[1], 2)];\n}
+function round_number(num, scale) {
+   var scale = Math.pow(10, scale);
+     return Math.round(num * scale) / scale;}
+     function pack_vector(v) {
+      return [round_number(v[0], 2), round_number(v[1], 2)];}
 
 /**
  *  Returns current time stamp
