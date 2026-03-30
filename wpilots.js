@@ -560,7 +560,7 @@ function start_gameserver(maps, options, shared) {
    *  @param {String} msg The message to broadcast.
    *  @return {undefined} Nothing
    */
-const PORT = process.env.PORT || options.ws_port || 8000;
+const PORT = options.ws_port || 6114;
 
 server = new WebSocketServer({
   port: PORT,

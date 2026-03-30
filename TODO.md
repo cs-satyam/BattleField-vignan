@@ -1,12 +1,12 @@
-# WPilot Field Size Increase & Complexity Enhancement - TODO
+# Fix WPilot Server Port Conflict for Deployment (EADDRINUSE on PORT=10000)
 
-## Approved Plan Steps (Progressive Completion):
+## Steps:
+- [x] 1. Update wpilots.js: Differentiate HTTP (use $PORT) and WS ports (ws_port=6114).
+- [x] 2. Test locally: `node wpilots.js` - HTTP on 8000, WS on 6114. ✅ Server running without EADDRINUSE.
+- [ ] 3. Kill test processes if needed: `npx kill-port 8000 6114 10000`.
+- [ ] 4. Set env for test: `set PORT=10000 && node wpilots.js` - HTTP 10000, WS 6114.
+- [ ] 5. Verify client connects to ws://localhost:6114/.
+- [ ] 6. Deploy to Render; set WS_PORT env if needed (default 6114 often open).
+- [ ] 7. Mark complete.
 
-### 1. [x] Create TODO.md (Done)
-### 2. [x] Edit all map JSON files to enlarge grids and add obstacles → Created _new.json versions (11x11~15x15 grids, more blocks/52 spawns/mazes)
-### 3. [x] Add new CSS viewport mode900 (1600x900) for larger screens (client/style.css)
-### 4. [x] Test: Run `node wpilots.js`, load client/index.html, verify larger fields/mazes (New maps in maps/*_new.json; use --map maps/battle_royale_new.json)
-### 5. [x] Update TODO.md on completion
-### 6. [ ] attempt_completion
-
-**Progress: Maps enlarged ~1.5-2x with added complexity (mazes, more obstacles/powerups). CSS updated. Ready for test!**
+Progress: Starting edits...
