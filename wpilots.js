@@ -6,17 +6,16 @@
 //  Read README for instructions and LICENSE license.
 //
 //  Copyright (c) 2010 Johan Dahlberg
-//
 var path = require('path'),
     fs = require('fs'),
     fu = require('./lib/fu'),
     http = require('http'),
-    ws = require('ws'),
     optparse = require('./lib/optparse'),
     match = require('./lib/match').Match,
     go = require('./lib/gameobjects');
 
-const WebSocketServer = ws.WebSocketServer;
+const { WebSocketServer } = require('ws'); // ✅ CORRECT WAY
+
 var inspect = require('util');
 
 // Define aliases
@@ -169,18 +168,17 @@ function main() {
       policy_server   = null,
       maps            = null;
 
-  if (!options) return;
+if (!options) return;
 
-  console.log('WPilot server ' + SERVER_VERSION);
+console.log('WPilot server ' + SERVER_VERSION);
 
-  maps = options.maps;
+maps = options.maps;
 
-  if (options.http_port != 0) {
-    webserver = start_webserver(options, shared);
-  }
+if (options.http_port != 0) {
+  webserver = start_webserver(options, shared);
+}
 
-  gameserver = start_gameserver(maps, options, shared);
-
+gameserver = start_gameserver(maps, options, shared, webserver);
 }
 
 /**
@@ -189,7 +187,7 @@ function main() {
  *  @returns {WebSocketServer} Returns the newly created WebSocket server
  *                             instance.
  */
-function start_gameserver(maps, options, shared) {
+function start_gameserver(maps, options, shared, webserver) {
   var connections     = {},
       no_connections  = 0,
       gameloop        = null,
@@ -199,20 +197,19 @@ function start_gameserver(maps, options, shared) {
       next_map_index  = 0;
 
   // Is called by the web instance to get current state
-  shared.get_state = function() {
-    return {
-      server_name:      options.name,
-      region:           options.region,
-      version:          SERVER_VERSION,
-      game_server_url:  'ws://' + (options.pub_host || options.host) + ':' +
-                                (options.pub_ws_port || options.ws_port) + '/',
-      map_name:         world.map_name,
-      max_players:      options.max_players,
-      no_players:       world.no_players,
-      no_ready_players: world.no_ready_players,
-      rules:            world.rules
-    }
+shared.get_state = function() {
+  return {
+    server_name: options.name,
+    region: options.region,
+    version: SERVER_VERSION,
+  game_server_url: null,
+    map_name: world.map_name,
+    max_players: options.max_players,
+    no_players: world.no_players,
+    no_ready_players: world.no_ready_players,
+    rules: world.rules
   }
+}
 
   /**
    *  The acutal game loop.
@@ -562,10 +559,9 @@ function start_gameserver(maps, options, shared) {
    */
 // const PORT = options.ws_port || 6114;\n// server = new WebSocketServer({\n//   port: PORT,\n//   host: '0.0.0.0'\n// });
 
-const PORT = options.ws_port || 6114;
+const PORT = process.env.PORT || 8000;
 server = new WebSocketServer({
-    port: PORT,
-  host: '0.0.0.0'
+  server: webserver
 });
 
 console.log('Game server running on port ' + PORT);
@@ -1064,21 +1060,21 @@ function start_webserver(options, shared) {
   fu.get('/', fu.staticHandler(CLIENT_DATA[0]));
 
   // FIXED /state endpoint
-  fu.get('/state', function (req, res) {
-    const host = req.headers.host;
+fu.get('/state', function (req, res) {
+  const host = req.headers.host;
 
-    const state = shared.get_state();
+  const state = shared.get_state();
 
-    // Dynamic websocket URL (important for Render)
-    state.game_server_url = `ws://${host}/`;
+  // ✅ dynamic correct URL
+  state.game_server_url = `ws://${host}/`;
 
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.write(JSON.stringify(state), 'utf8');
-    res.end();
-  });
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.write(JSON.stringify(state), 'utf8');
+  res.end();
+});
 
-  // 🔥 YOU FORGOT THIS
-  return server;
+// return server properly
+return server;
 }
 /**
  *  Filters all rules from a options dict
